@@ -3,7 +3,7 @@
 
 La única API para consultar multas de tránsito en Argentina.
 
-Esta documentación está orientada a integraciones empresariales. Para solicitar acceso, visitá [https://multabot.com.ar](https://multabot.com.ar).
+Esta documentación está orientada a integraciones empresariales. Para solicitar acceso, visitá [https://multabot.com.ar/desarrolladores](https://multabot.com.ar/desarrolladores).
 
 ---
 
