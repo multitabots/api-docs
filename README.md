@@ -141,8 +141,7 @@ Devuelve un listado de dominios actualmente monitoreados.
     "domain": "12345678",
     "type": "dni",
     "entities": [
-      { "name": "CABA", "slug": "caba" },
-      { "name": "Buenos Aires", "slug": "buenos-aires" }
+      { "name": "CABA", "slug": "caba" }
     ]
   }
 ]
