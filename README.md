@@ -1,134 +1,208 @@
 
 # API Multabot
 
-La única API para consultar multas a infracciones en Argentina.
+La única API para consultar multas de tránsito en Argentina.
 
-Esta documentación es para la API para empresas, en caso de querer integrarla ponerse en contacto desde la web.
+Esta documentación está orientada a integraciones empresariales. Para solicitar acceso, visitá [https://multabot.com.ar](https://multabot.com.ar).
 
-Sitio web: [https://multabot.com.ar](https://multabot.com.ar)
+---
 
+## Autenticación
 
-# Autorización
+La API utiliza autenticación por **Bearer Token** en el encabezado `Authorization`.
 
-La API funciona con Bearer Token desde un header `Authorization`.
+Los tokens se generan desde el panel de tu cuenta.
 
-Se pueden crear desde el panel de API en tu cuenta.
+---
 
-# Limites
+## Límites
 
-No hay limites para las consultas.
+Actualmente no existen límites de uso para las consultas.
 
-# Endpoints
+---
 
-Los endpoints tienen dos tipo de respuesta.
+## API Reference
 
-* `200` Solicitud OK
-* `204` Solicitud OK sin contenido
-* `422` Validación incorrecta cuando hay parámetros incorrectos
+### Obtener listado de jurisdicciones
 
-## Entities
+```http
+GET /entities
+```
 
-### GET `/entities`
+Devuelve el listado de jurisdicciones disponibles y el estado actual de cada servicio.
 
-Listado de jurisdicciones. Incluye el estado del servicio.
+| Parámetro | Tipo | Descripción |
+|----------|------|-------------|
+| –        | –    | No requiere parámetros |
 
-__Formato de respuesta__
+**Respuesta**
 
-* `name (string)` Nombre de la jurisdicción
-* `slug (string)` Identificador de la jurisdicción para demás endpoints
-* `is_working (boolean)` 
+```json
+[
+  {
+    "name": "CABA",
+    "slug": "caba",
+    "is_working": true
+  }
+]
+```
 
-## Requests
+---
 
-### GET `/requests`
+### Consultar infracciones
 
-Listado de solicitudes a la API. 
+```http
+POST /penalties
+```
 
-__Parámetros opcionales de solicitud__
+Consulta las infracciones pendientes para una patente o DNI en una jurisdicción determinada.
 
-* `entity` Slug de jurisdicción
-* `domain` Dominio (DNI/Patente)
+| Parámetro  | Tipo     | Descripción                             |
+|-----------|----------|------------------------------------------|
+| `domain`  | `string` | **Requerido.** Patente o DNI a consultar |
+| `entity`  | `string` | **Requerido.** Slug de la jurisdicción   |
 
-## Penalties
+**Respuesta**
 
-### Formato de infracción
+```json
+{
+  "total": 2,
+  "items": [
+    {
+      "entity": {
+        "name": "CABA",
+        "slug": "caba"
+      },
+      "unique_id": "Q31189527",
+      "description": "Exceso de velocidad leve",
+      "authority": "GCBA",
+      "amount": 12345.67,
+      "emitted_at": "2025-01-22 14:30",
+      "expires_at": "2025-02-15",
+      "requires_controller": false,
+      "metadata": { ... }
+    }
+  ]
+}
+```
 
-* `entity` `array`
-    * `name` `string`
-    * `slug` `string`
-* `unique_id` `string` Acta
-* `description` `string` Descripción/título de la multa
-* `authority` `string|null` Autoridad que registra la infracción (nullable)
-* `amount` `float` Monto, en caso de pago voluntario muestra el valor. _Post-vencimiento se actualiza._
-* `emitted_at` `string` Fecha de emisión de la infracción. 
-* `expires_at` `string` Fecha de vencimiento
-* `requires_controller` `boolean` La multa requiere controlador
-* `metadata` `array` Metadata cruda de la infracción. Varía según jurisdicción.
+---
 
-### POST `/penalties`
+### Obtener historial de consultas realizadas
 
-Consultar infracciones
+```http
+GET /requests
+```
 
-__Parámetros de solicitud__
+Devuelve un historial de las consultas hechas a la API.
 
-* `domain` Dominio, patente/DNI
-* `entity` Identificador de la jurisdicción
+| Parámetro   | Tipo     | Descripción                                 |
+|------------|----------|----------------------------------------------|
+| `entity`   | `string` | (Opcional) Slug de jurisdicción consultada   |
+| `domain`   | `string` | (Opcional) Patente o DNI consultado          |
 
-__Formato de respuesta__
+**Respuesta**
 
-* `items` Array con listado de infracciones pendientes de pago
-* `total` Cantidad de items en respuesta
+```json
+[
+  {
+    "domain": "ABC123",
+    "entity": "caba",
+    "status": 200,
+    "timestamp": "2025-07-06T14:00:00Z"
+  }
+]
+```
 
-## Monitoring
+---
 
-Monitoring permite configurar webhooks que notifican nuevas infracciones.
+## Monitoreo de infracciones
 
-*Se pueden implementar alertas de vencimiento a pedido*
+Permite configurar webhooks para recibir alertas cuando se detecten nuevas infracciones.  
+*Alertas de vencimiento disponibles bajo pedido.*
 
-### GET `/monitoring`
+---
 
-Listado de monitores activos.
+### Obtener monitores activos
 
-__Formato de respuesta__
+```http
+GET /monitoring
+```
 
-Un `array` de dominios
+Devuelve un listado de dominios actualmente monitoreados.
 
-* `uuid` `string`
-* `url` `string` URL del webhook
-* `domain` `string` Patente/DNI
-* `type` `string` Puede ser `dni` o `license_plate`
-* `entities` `array`
-    * `name`
-    * `slug`
+**Respuesta**
 
-### POST `/monitoring`
+```json
+[
+  {
+    "uuid": "aabbcc-dd1122",
+    "url": "https://miweb.com/webhook",
+    "domain": "12345678",
+    "type": "dni",
+    "entities": [
+      { "name": "CABA", "slug": "caba" },
+      { "name": "Buenos Aires", "slug": "buenos-aires" }
+    ]
+  }
+]
+```
 
-Registrar un nuevo monitor. Se auto-detecta si es Patente/DNI
+---
 
-__Formato de solicitud__
+### Registrar un nuevo monitor
 
-* `entity` `string` Identificador de jurisdicción
-* `domain` `string` Patente/DNI
-* `url` `string` URL del endpoint para webhook. Incluir `http` o `https`
+```http
+POST /monitoring
+```
 
-__Formato de respuesta__
+| Parámetro | Tipo     | Descripción                                                        |
+|----------|----------|---------------------------------------------------------------------|
+| `entity` | `string` | **Requerido.** Slug de la jurisdicción                             |
+| `domain` | `string` | **Requerido.** Patente o DNI                                       |
+| `url`    | `string` | **Requerido.** URL del webhook receptor (`http` o `https`)         |
 
-* `uuid` `string`
-* `url` `string` URL del webhook
-* `domain` `string` Patente/DNI
-* `type` `string` Puede ser `dni` o `license_plate`
-* `entities` `array`
-    * `name`
-    * `slug`
+**Respuesta**
 
-### DELETE `/monitoring/{uuid}`
+```json
+{
+  "uuid": "aabbcc-dd1122",
+  "url": "https://miweb.com/webhook",
+  "domain": "ABC123",
+  "type": "license_plate",
+  "entities": [
+    { "name": "CABA", "slug": "caba" }
+  ]
+}
+```
 
-Eliminar un monitor.
+---
 
-__Formato de solicitud__
+### Eliminar un monitor
 
-* `uuid` `string` UUID
+```http
+DELETE /monitoring/{uuid}
+```
 
-__Formato de respuesta__
+| Parámetro | Tipo     | Descripción                  |
+|----------|----------|------------------------------|
+| `uuid`   | `string` | **Requerido.** ID del monitor |
 
-Devuelve `204` en lugar a `200`, no hay contenido en la respuesta.
+**Respuesta**
+
+- `204 No Content` – Eliminación exitosa
+
+---
+
+## Códigos de estado
+
+| Código | Significado                       |
+|--------|-----------------------------------|
+| `200`  | OK, la solicitud fue exitosa      |
+| `204`  | OK, pero sin contenido disponible |
+| `422`  | Error de validación               |
+
+---
+
+¿Querés integrar Multabot?  
+Contactanos desde [https://multabot.com.ar](https://multabot.com.ar)
