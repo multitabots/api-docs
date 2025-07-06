@@ -1,5 +1,5 @@
 
-# API Multabot
+# API para Multas (Multabot.com.ar)
 
 La única API para consultar multas de tránsito en Argentina.
 
