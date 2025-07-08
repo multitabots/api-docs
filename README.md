@@ -66,12 +66,11 @@ Consulta las infracciones pendientes para una patente o DNI en una jurisdicción
 
 ```json
 {
-  "total": 2,
   "items": [
     {
       "entity": {
         "name": "CABA",
-        "slug": "caba"
+        "url": "caba"
       },
       "unique_id": "Q31189527",
       "description": "Exceso de velocidad leve",
@@ -82,7 +81,8 @@ Consulta las infracciones pendientes para una patente o DNI en una jurisdicción
       "requires_controller": false,
       "metadata": { ... }
     }
-  ]
+  ],
+  "total": 2
 }
 ```
 
