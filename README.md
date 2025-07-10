@@ -57,10 +57,11 @@ POST /penalties
 
 Consulta las infracciones pendientes para una patente o DNI en una jurisdicción determinada.
 
-| Parámetro  | Tipo     | Descripción                             |
-|-----------|----------|------------------------------------------|
-| `domain`  | `string` | **Requerido.** Patente o DNI a consultar |
-| `entity`  | `string` | **Requerido.** Slug de la jurisdicción   |
+| Parámetro  | Tipo     | Descripción                                   |
+|-----------|-----------|-----------------------------------------------|
+| `domain`  | `string`  | **Requerido.** Patente o DNI a consultar      |
+| `type`    | `string`  | **Requerido.** Opciones `license_plate` `dni` |
+| `entity`  | `string`  | **Requerido.** Slug de la jurisdicción        |
 
 **Respuesta**
 
@@ -82,6 +83,10 @@ Consulta las infracciones pendientes para una patente o DNI en una jurisdicción
       "metadata": { ... }
     }
   ],
+  "domain": {
+    "domain": "ABC123",
+    "type": "license_plate|dni"
+  },
   "total": 2
 }
 ```
